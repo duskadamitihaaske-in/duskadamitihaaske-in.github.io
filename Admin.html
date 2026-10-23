@@ -1,0 +1,46 @@
+<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Comments Admin</title>
+<style>
+:root{--bg:#F6F7FB;--card:#fff;--ink:#1B2350;--muted:#6B7194;--line:#DDE1F0;--bad:#B42318}
+@media(prefers-color-scheme:dark){:root{--bg:#10131F;--card:#1A1F33;--ink:#E8EAF6;--muted:#9AA0C0;--line:#2B3250}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif;padding:16px}
+.w{max-width:820px;margin:0 auto}h1{font-size:20px;margin:0 0 12px}
+button{font:600 14px system-ui;border:0;border-radius:999px;padding:9px 16px;cursor:pointer;background:#065FD4;color:#fff}
+button.del{background:var(--bad)}button.o{background:none;color:var(--ink);border:1px solid var(--line)}
+.row{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}
+.m{color:var(--muted);font-size:13px;margin-bottom:4px}.t{white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0 10px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+#err{color:var(--bad)}
+</style></head><body><div class="w">
+<h1>🛡️ Comments Admin</h1><div id="out"></div></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = {apiKey:"AIzaSyADkKOdHL-Cschi8WkMsrAOODJJ0wxCK2k",authDomain:"dus-kadam-notes.firebaseapp.com",projectId:"dus-kadam-notes",storageBucket:"dus-kadam-notes.firebasestorage.app",messagingSenderId:"784274648842",appId:"1:784274648842:web:e22736913b47c626c994f3"};   // <-- comments.js wala hi firebaseConfig yahan bhi paste karo
+const ADMIN_EMAIL = "duskadamitihaaske@gmail.com";
+const out=document.getElementById('out');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+if(!FIREBASE_CONFIG){out.innerHTML='<p>Firebase config abhi nahi bhari gayi.</p>';}
+else{
+ firebase.initializeApp(FIREBASE_CONFIG);const auth=firebase.auth(),db=firebase.firestore();
+ auth.onAuthStateChanged(u=>{
+  if(!u){out.innerHTML='<button id="in">Google se sign in karo</button>';document.getElementById('in').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());return;}
+  if(u.email!==ADMIN_EMAIL){out.innerHTML='<p>Ye account allowed nahi hai: '+esc(u.email)+'</p><button class="o" id="so">Sign out</button>';document.getElementById('so').onclick=()=>auth.signOut();return;}
+  load(u);});
+ async function load(u){
+  out.innerHTML='<div class="bar"><select id="pg"><option value="">Saare pages</option><option>class6</option><option>class7</option><option>class8</option><option>class9</option></select><button class="o" id="rf">Refresh</button><button class="o" id="so">Sign out</button></div><div id="err"></div><div id="list">Load ho raha hai…</div>';
+  document.getElementById('so').onclick=()=>auth.signOut();
+  document.getElementById('rf').onclick=go;document.getElementById('pg').onchange=go;
+  go();
+  async function go(){
+   const p=document.getElementById('pg').value;let q=db.collection('comments');if(p)q=q.where('page','==',p);
+   const s=await q.limit(300).get();
+   const d=s.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.ts?b.ts.toMillis():0)-(a.ts?a.ts.toMillis():0));
+   document.getElementById('list').innerHTML=d.length?d.map(c=>`<div class="row" id="r${c.id}"><div class="m">${esc(c.page)} · <b>${esc(c.name)}</b> · ${c.ts?c.ts.toDate().toLocaleString('en-IN'):''}${c.parent?' · (reply)':''}${c.chapter?' · '+esc(c.chapter):''}</div><div class="t">${esc(c.text)}</div><button class="del" data-id="${c.id}">🗑️ Delete</button></div>`).join(''):'Koi comment nahi.';
+   document.querySelectorAll('button.del').forEach(b=>b.onclick=async()=>{
+    try{await db.collection('comments').doc(b.dataset.id).delete();document.getElementById('r'+b.dataset.id).remove();}
+    catch(e){document.getElementById('err').textContent='Delete fail: '+e.message;}});
+  }}
+}
+</script></body></html>
