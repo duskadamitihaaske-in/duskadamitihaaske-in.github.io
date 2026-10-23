@@ -161,7 +161,7 @@ function render(){
  top.sort(sort==='top'?(a,b)=>score(b)-score(a)||b.ts-a.ts:(a,b)=>b.ts-a.ts);
  const total=all.length;
  root.innerHTML=`<div class="yc-card">
-  <div class="yc-head"><h2>${total.toLocaleString('en-IN')} Comments</h2>
+  <div class="yc-head"><h2>${total.toLocaleString('en-IN')} ${total===1?'Comment':'Comments'}</h2>
    <div class="yc-sort"><button type="button" class="yc-sbtn">${I.sort}Sort by</button>
     <div class="yc-menu"><button data-s="top" class="${sort==='top'?'on':''}">Top comments</button><button data-s="new" class="${sort==='new'?'on':''}">Newest first</button></div></div></div>
   ${db?'':'<div class="yc-demo">Demo mode — ye sample comments hain. Firebase judne ke baad asli comments dikhenge.</div>'}
