@@ -14,7 +14,7 @@ const ls = { get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 
 /* ---------- styles ---------- */
 const css = `
-#dk-comments{max-width:880px;margin:28px auto 8px;padding:0 16px;font-family:var(--f-body,system-ui);color:var(--ink,#1B2350)}
+#dk-comments{width:100%;min-width:0;max-width:880px;margin:28px auto 8px;padding:0 16px;font-family:var(--f-body,system-ui);color:var(--ink,#1B2350)}
 #dk-comments *{box-sizing:border-box}
 .yc-card{background:var(--card,#fff);border:1px solid var(--line,#DDE1F0);border-radius:18px;padding:20px 20px 8px}
 .yc-head{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:18px}
