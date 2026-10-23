@@ -24,8 +24,9 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 if(!FIREBASE_CONFIG){out.innerHTML='<p>Firebase config abhi nahi bhari gayi.</p>';}
 else{
  firebase.initializeApp(FIREBASE_CONFIG);const auth=firebase.auth(),db=firebase.firestore();
+ auth.getRedirectResult().catch(e=>{out.insertAdjacentHTML('beforeend','<p style="color:#ff8080">Error: '+esc(e.code||'')+' '+esc(e.message||e)+'</p>');});
  auth.onAuthStateChanged(u=>{
-  if(!u){out.innerHTML='<button id="in">Google se sign in karo</button>';document.getElementById('in').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());return;}
+  if(!u){out.innerHTML='<button id="in">Google se sign in karo</button>';document.getElementById('in').onclick=async()=>{const pr=new firebase.auth.GoogleAuthProvider();try{await auth.signInWithPopup(pr);}catch(e){out.insertAdjacentHTML('beforeend','<p style="color:#ff8080">Error: '+esc(e.code||'')+' '+esc(e.message||e)+'</p>');if(/popup|cancel|blocked|operation-not-supported|web-storage/.test(e.code||'')){try{await auth.signInWithRedirect(pr);}catch(e2){out.insertAdjacentHTML('beforeend','<p style="color:#ff8080">Redirect error: '+esc(e2.code||'')+' '+esc(e2.message||e2)+'</p>');}}}};return;}
   if(u.email!==ADMIN_EMAIL){out.innerHTML='<p>Ye account allowed nahi hai: '+esc(u.email)+'</p><button class="o" id="so">Sign out</button>';document.getElementById('so').onclick=()=>auth.signOut();return;}
   load(u);});
  async function load(u){
